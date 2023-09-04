@@ -3,5 +3,5 @@ Flask-CORS==3.0.10
 python-dotenv==0.19.0
 json5==0.9.6
 openai==0.27.6
-langchain==0.0.232
+langchain==0.0.27
 Jinja2
