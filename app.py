@@ -80,9 +80,11 @@ overall_chain = SimpleSequentialChain(chains=[task_creator_chain, task_selector_
 
 # print(overall_chain.run("IELTS Academic Writing Task 2"))
 
-
 app = Flask(__name__)
 
+@app.route('/api', methods=['POST'])
+def hello_world():
+    return jsonify({"message": "Hello World"})
 
 # API endpoint for generating a test
 @app.route('/api/generate_test', methods=['POST'])
@@ -103,12 +105,6 @@ def api_generate_test():
         return jsonify(test_data)
     else:
         return jsonify({'error': 'Unexpected data format'})
-
-app = Flask(__name__)
-
-@app.route('/api', methods=['POST'])
-def hello_world():
-    return jsonify({"message": "Hello World"})
-
+    
 if __name__ == '__main__':
     app.run(debug=True)
