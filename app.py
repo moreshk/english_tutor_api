@@ -105,6 +105,98 @@ def api_generate_test():
         return jsonify(test_data)
     else:
         return jsonify({'error': 'Unexpected data format'})
-    
+
+
+# API endpoint for grading a response
+@app.route('/api/grade_response', methods=['POST'])
+def api_grade_response():
+    data = request.json
+    user_response = data.get('userResponse')
+    title = data.get('title')
+    description = data.get('description')
+
+    llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo")
+
+    prompt = PromptTemplate(
+        input_variables=["essay", "task_title", "task_desc"],
+        template="""You are an essay grader for IELTS Writing Task 2. Your criteria for grading is how well the provided essay fulfils the requirements of the task, 
+        including whether it has addressed all parts of the task description and provided a clear position. 
+        The key points for your grading are:
+        1. Does the essay address all parts of the prompt (task and task description).
+        2. Provides a clear thesis statement that outlines the writers position.
+        3. Support the writers arguments with relevant examples and evidence.
+        
+        Task Title: {task_title}
+
+        Task Description: {task_desc}
+
+        Essay: {essay}
+
+        Grade the essay out of 10 on each of the 3 points. Provide detailed description about how much you graded the essay on each of the points and provide feedback on how it could improve. Finally provide the average grade based on the 3 grades.
+        """,
+    )
+
+    chain = LLMChain(llm=llm, prompt=prompt)
+
+    inputs = {
+        "essay": user_response,
+        "task_title": title,
+        "task_desc": description
+    }
+
+    # print(chain.run(inputs))
+
+    # Your existing logic for grading
+    feedback_from_api = chain.run(inputs)  # Replace with actual feedback
+
+    return jsonify({'feedback': feedback_from_api})
+
+# API endpoint for grading a response for coherence
+@app.route('/api/grade_response_coherence', methods=['POST'])
+def api_grade_response_coherence():
+    data = request.json
+    user_response = data.get('userResponse')
+    title = data.get('title')
+    description = data.get('description')
+
+    # Your existing logic for grading
+    # Your code to generate the grade and feedback using OpenAI API
+    # For example:
+    # grade, feedback = your_function_to_generate_grade(user_response, title, description)
+
+    llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo")
+
+    prompt = PromptTemplate(
+        input_variables=["essay", "task_title", "task_desc"],
+        template="""You are an essay grader for IELTS Writing Task 2. Your criteria for grading is how well the provided essay is in terms of its coherence and cohesion in context of the title and description of the task.
+        You will evaluate the organization and flow of the essay. Look at how well the ideas are sequenced and how well the paragraphs are linked.
+        The key points for your grading are:
+        1. Use clear paragraphing with topic sentences.
+        2. Use cohesive devices (e.g., furthermore, however, in addition) effectively.
+        3. Make sure your ideas are logically organized and easy to follow.
+        
+        Task Title: {task_title}
+
+        Task Description: {task_desc}
+
+        Essay: {essay}
+
+        Grade the essay out of 10 on each of the 3 points. Provide detailed description about how much you graded the essay on each of the points and provide feedback on how it could improve. Finally provide the average grade based on the 3 grades.
+        """,
+    )
+
+    chain = LLMChain(llm=llm, prompt=prompt)
+
+    inputs = {
+        "essay": user_response,
+        "task_title": title,
+        "task_desc": description
+    }
+
+    feedback_from_api = chain.run(inputs)  # Replace with actual feedback
+
+    return jsonify({'feedback': feedback_from_api})
+
+
 if __name__ == '__main__':
     app.run(debug=True)
