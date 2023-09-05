@@ -109,6 +109,7 @@ def token_required(f):
 app = Flask(__name__)
 
 @app.route('/api', methods=['POST'])
+@token_required
 def hello_world():
     return jsonify({"message": "Hello World"})
 
