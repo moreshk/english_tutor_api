@@ -1,6 +1,9 @@
 from flask import Flask, jsonify, request
 import json
 import os
+from functools import wraps
+import jwt
+
 from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
@@ -78,7 +81,30 @@ task_selector_chain = LLMChain(llm=llm, prompt=prompt_template)
 from langchain.chains import SimpleSequentialChain
 overall_chain = SimpleSequentialChain(chains=[task_creator_chain, task_selector_chain], verbose=True)
 
-# print(overall_chain.run("IELTS Academic Writing Task 2"))
+JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
+if not JWT_SECRET_KEY:
+    raise ValueError("Please set the JWT_SECRET_KEY in the .env file.")
+
+print("JWT_SECRET_KEY:", os.environ.get("JWT_SECRET_KEY"))
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        if 'x-access-token' in request.headers:
+            token = request.headers['x-access-token']
+        
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        
+        try:
+            data = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
+        except:
+            return jsonify({'message': 'Token is invalid!'}), 401
+        
+        return f(*args, **kwargs)
+    
+    return decorated
 
 app = Flask(__name__)
 
@@ -105,6 +131,9 @@ def api_generate_test():
         return jsonify(test_data)
     else:
         return jsonify({'error': 'Unexpected data format'})
+
+
+
 
 
 # API endpoint for grading a response

@@ -2,3 +2,4 @@ Flask>=2.2.2
 python-dotenv==0.19.0
 langchain
 openai
+PyJWT==2.1.0
